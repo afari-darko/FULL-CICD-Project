@@ -1,0 +1,66 @@
+---
+- name: Install Jenkins on Rocky Linux
+  hosts: jenkins_servers
+  become: yes
+  vars:
+    jenkins_repo_url: "http://pkg.jenkins.io/redhat-stable/jenkins.repo"
+    jenkins_repo_key: "https://pkg.jenkins.io/redhat-stable/jenkins.io.key"
+    jenkins_service_name: "jenkins"
+    jenkins_port: 8080
+  tasks:
+
+    - name: Ensure system is up-to-date
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Install Java (Jenkins dependency)
+      yum:
+        name: java-11-openjdk
+        state: present
+
+    - name: Add Jenkins repository
+      get_url:
+        url: "{{ jenkins_repo_url }}"
+        dest: /etc/yum.repos.d/jenkins.repo
+
+    - name: Import Jenkins repository GPG key
+      rpm_key:
+        key: "{{ jenkins_repo_key }}"
+
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: present
+
+    - name: Ensure Jenkins is enabled and started
+      systemd:
+        name: "{{ jenkins_service_name }}"
+        enabled: yes
+        state: started
+
+    - name: Open Jenkins port in firewall (firewalld)
+      firewalld:
+        port: "{{ jenkins_port }}/tcp"
+        permanent: yes
+        state: enabled
+      notify: reload_firewalld
+
+    - name: Print Jenkins initial admin password
+      command: "cat /var/lib/jenkins/secrets/initialAdminPassword"
+      register: jenkins_password
+      changed_when: false
+
+    - name: Show Jenkins initial admin password
+      debug:
+        msg: "Jenkins initial admin password is {{ jenkins_password.stdout }}"
+
+    - name: Inform user about Jenkins access
+      debug:
+        msg: "Jenkins is installed and running on port {{ jenkins_port }}. Access it via http://<server_ip>:{{ jenkins_port }}"
+
+  handlers:
+    - name: reload_firewalld
+      systemd:
+        name: firewalld
+        state: reloaded
