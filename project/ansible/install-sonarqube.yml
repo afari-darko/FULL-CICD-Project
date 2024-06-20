@@ -28,7 +28,7 @@
         remote_src: yes
      
     - name: change sonarqube directory ownership and permissions
-      command: chmod -R "775 /opt/sonarqube-10.5.1.90531"
+      command: chmod -R "755 /opt/sonarqube-10.5.1.90531"
       command: chown -R "sonarqube:sonarqube /opt/sonarqube-10.5.1.90531"
 
     - name: Create a systemd service for SonarQube
