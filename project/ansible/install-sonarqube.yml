@@ -1,5 +1,6 @@
 ---
-- hosts: sonarqube-server
+- name: install sonarqube server
+  hosts: sonarqube-server
   become: true
   tasks:
     - name: create sonarqube user
