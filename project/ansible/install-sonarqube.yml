@@ -43,5 +43,5 @@
     - name: Restart sonarqube
       systemd:
         name: sonarqube
-        enabled: yes
         state: restarted
+        enabled: yes
