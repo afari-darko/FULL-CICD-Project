@@ -21,15 +21,15 @@
         url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.5.1.90531.zip
         dest: /opt
 
-    - name: extract maven packages
+    - name: unzip sonarqube download
       unarchive:
         src: /opt/sonarqube-10.5.1.90531.zip
         dest: /opt
         remote_src: yes
      
     - name: change sonarqube directory ownership and permissions
-      command: chmod -R 775 /opt/sonarqube-10.5.1.90531
-      command: chown -R sonarqube:sonarqube /opt/sonarqube-10.5.1.90531
+      command: chmod -R "775 /opt/sonarqube-10.5.1.90531"
+      command: chown -R "sonarqube:sonarqube /opt/sonarqube-10.5.1.90531"
 
     - name: Create a systemd service for SonarQube
       template:
@@ -37,5 +37,10 @@
         dest: /etc/systemd/system/sonarqube.service
       notify:
         - Restart Sonarqube
+        
   handlers:
     - name: Restart sonarqube
+      systemd:
+        name: sonarqube
+        enabled: yes
+        state: restarted
