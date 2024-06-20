@@ -92,7 +92,7 @@ resource "aws_instance" "devops-project-server" {
   key_name               = "devops"
   vpc_security_group_ids = [aws_security_group.devops-project-sg.id]
   subnet_id              = aws_subnet.devops-project-pub-sub-01.id
-  for_each               = toset(["jenkins-master", "jenkins-slave", "ansible-server"])
+  for_each               = toset(["jenkins-master", "jenkins-slave", "ansible-server", sonarqube-server])
   tags                   = { Name = "${each.key}" }
 }
 
