@@ -1,6 +1,6 @@
 ---
 - name: install sonarqube server
-  hosts: sonarqube-server
+  hosts: jenkins-slave
   become: true
   tasks:
     - name: create sonarqube user
@@ -8,10 +8,10 @@
         name: "sonarqube"
         password: "Sonarqube123$"
         state: present
-        
-    - name: install pre-requisites (unzip, java 17, wget
+
+    - name: install pre-requisites (unzip, java 17, wget)
       yum:
-        name: 
+        name:
           - java-17-openjdk
           - unzip
           - wget
@@ -27,21 +27,24 @@
         src: /opt/sonarqube-10.5.1.90531.zip
         dest: /opt
         remote_src: yes
-     
-    - name: change sonarqube directory ownership and permissions
-      command: chmod -R "755" "/opt/sonarqube-10.5.1.90531"
+
+    - name: change sonarqube directory ownership
       command: chown -R "sonarqube:sonarqube" "/opt/sonarqube-10.5.1.90531"
+
+    - name: change sonarqube directory permissions
+      command: chmod -R "775" "/opt/sonarqube-10.5.1.90531"
 
     - name: Create a systemd service for SonarQube
       template:
         src: sonarqube.service.txt
         dest: /etc/systemd/system/sonarqube.service
-      notify:
-        - Restart Sonarqube
-        
-  handlers:
-    - name: Restart sonarqube
+
+    - name: enable and start sonarqube service
       systemd:
-        name: sonarqube
-        state: restarted
+        name: "sonarqube.service"
         enabled: yes
+        state: started
+
+    - name: Inform user about sonarqube access
+      debug:
+        msg: "sonarqube is installed and running on port 9000. Access it via http://<server_ip>:9000"
