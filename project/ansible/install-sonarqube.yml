@@ -1,6 +1,6 @@
 ---
 - name: install sonarqube server
-  hosts: jenkins-slave
+  hosts: sonarqube-server
   become: true
   tasks:
     - name: create sonarqube user
