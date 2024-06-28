@@ -1,63 +1,64 @@
 ---
-- name: Install Jenkins on Rocky Linux
+- name: install jenkins on jenkins master server
   hosts: jenkins-master
-  become: yes
-  vars:
-    jenkins_repo_url: "http://pkg.jenkins.io/redhat-stable/jenkins.repo"
-    jenkins_repo_key: "https://pkg.jenkins.io/redhat-stable/jenkins.io.key"
-    jenkins_service_name: "jenkins"
-    jenkins_port: 8080
+  become: true
   tasks:
+    - name: import jenkins GPG key
+      rpm_key:
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        state: present
 
-    - name: Ensure system is up-to-date
-      yum:
-        name: "*"
-        state: latest
+    - name: add jenkins repository
+      get_url:
+        url: http://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
 
-    - name: Install Java (Jenkins dependency)
+    - name: install java (jenkins dependency)
       yum:
         name: java-11-openjdk
         state: present
 
-    - name: Add Jenkins repository
-      get_url:
-        url: "{{ jenkins_repo_url }}"
-        dest: /etc/yum.repos.d/jenkins.repo
-
-    - name: Import Jenkins repository GPG key
-      rpm_key:
-        key: "{{ jenkins_repo_key }}"
-
-    - name: Install Jenkins
+    - name: install jenkins
       yum:
         name: jenkins
         state: present
 
-    - name: Ensure Jenkins is enabled and started
+    - name: ensure jenkins is enabled and started
       systemd:
-        name: "{{ jenkins_service_name }}"
+        name: jenkins
         enabled: yes
         state: started
 
-    - name: Open Jenkins port in firewall (firewalld)
+    - name: install firewalld
+      yum:
+        name: firewalld
+        state: present
+
+    - name: enable and start firewalld after installation
+      systemd:
+        name: firewalld
+        enabled: yes
+        state: started
+
+    - name: open jenkins port in firewalld
       firewalld:
-        port: "{{ jenkins_port }}/tcp"
+        port: "8080/tcp"
         permanent: yes
         state: enabled
       notify: reload_firewalld
 
-    - name: Print Jenkins initial admin password
+    - name: print jenkins initial admin password
       command: "cat /var/lib/jenkins/secrets/initialAdminPassword"
       register: jenkins_password
       changed_when: false
 
-    - name: Show Jenkins initial admin password
+    - name: show jenkins initial password
       debug:
-        msg: "Jenkins initial admin password is {{ jenkins_password.stdout }}"
+        msg: "jenkins initial password is {{ jenkins_password.stdout }}"
 
-    - name: Inform user about Jenkins access
+    - name: inform user jenkins is ready
       debug:
-        msg: "Jenkins is installed and running on port {{ jenkins_port }}. Access it via http://<server_ip>:{{ jenkins_port }}"
+        msg: "jenkins is installed and running on port 8080. Access it via http://<jenkins-server-ip:8080"
 
   handlers:
     - name: reload_firewalld
