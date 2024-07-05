@@ -6,6 +6,11 @@
        yum:
          name: java-11-openjdk
          state: present
+         
+    -  name: install git
+       yum:
+         name: git
+         state: present
 
     - name: download maven packages
       get_url:
