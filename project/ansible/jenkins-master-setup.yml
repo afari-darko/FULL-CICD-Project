@@ -3,6 +3,11 @@
   hosts: jenkins-master
   become: true
   tasks:
+   -  name: install git
+       yum:
+         name: git
+         state: present
+         
     - name: import jenkins GPG key
       rpm_key:
         key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
