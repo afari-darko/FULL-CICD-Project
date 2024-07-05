@@ -11,6 +11,17 @@
        yum:
          name: git
          state: present
+         
+    - name: download sonar-scanner binaries
+      get_url:
+        url: https://github.com/SonarSource/sonar-scanner-cli/archive/refs/tags/6.1.0.4477.tar.gz
+        dest: /opt
+
+    - name: extract sonar scanner packages
+      unarchive:
+        src: /opt/sonar-scanner-cli-6.1.0.4477.tar.gz
+        dest: /opt
+        remote_src: yes
 
     - name: download maven packages
       get_url:
